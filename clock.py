@@ -39,7 +39,7 @@ def encode_time():
     secs = encode_to_led_bits(now.second, 6, 0xFF0000, 0x402020)
 
     time = [0,0] + secs + [0,0] + mins + [0,0] + hours
-    return fill_time_fram(time, now.second)
+    return fill_time_frame(time, now.second)
 
 time_colors = {
     0: 0xFF0000,
@@ -50,12 +50,12 @@ time_colors = {
     5: 0xFF00FF
 }
 
-def fill_time_fram(frame, secs):
+def fill_time_frame(frame, secs):
     return [time_colors[secs // 10] for i in range(LED_COUNT - len(frame))] + frame
 
 try:
     port = serial.serial_for_url(SERIAL_ADDRESS)
-    write_brightness_frame(30, port)
+    write_brightness_frame(10, port)
     while True:
         write_led_frame(encode_time(), port)
         sleep(1)

@@ -124,7 +124,10 @@ void read_frame(){
 
 void reset(){
    LEDS.showColor(0x000000);
-   while(Serial.read()){}
+   //Consume and discard the remainder of the serial buffer.
+   while(Serial.available()){
+     Serial.read();
+   }
 }
 
 void loop() {

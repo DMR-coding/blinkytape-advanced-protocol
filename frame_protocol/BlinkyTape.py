@@ -1,3 +1,11 @@
+##An OO python client for the frame_protocol.ino firmware.
+##Supports three operations:
+##    setColor-- Sets all LEDS to a single color.
+##    setColors-- Pass an array of color values to set all LEDs individually.
+##    setBrightness-- Pass an integer brightness value (from 0 to 93)
+
+## Requires: pySerial
+
 import serial
 
 class BlinkyTape:

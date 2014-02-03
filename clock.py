@@ -41,10 +41,10 @@ def fill_time_frame(frame, secs):
 blinkyTape = None
 try:
     blinkyTape = BlinkyTape(SERIAL_ADDRESS)
-    blinkyTape.setBrightness(30)
+    blinkyTape.setBrightness(10)
     while True:
         blinkyTape.setColors(encode_time())
         sleep(1)
 finally:
     if blinkyTape:
-        blinkyTape.setColor(0x404040)
+        blinkyTape.setColor(0)

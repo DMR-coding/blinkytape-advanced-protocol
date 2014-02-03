@@ -1,70 +1,79 @@
 #include <FastSPI_LED2.h>
-#include <Animation.h>
 
 #define LED_COUNT 60 // BlinkyTape has 60 LEDs!
 struct CRGB leds[LED_COUNT]; // this struct contains 60 CRGB values.  This is where 
 
-#define PIN_BUTTON 10
-#define PIN_IO_A   7
-#define PIN_IO_B   11
-#define PIN_SIGNAL 13
-#define PIN_INPUT  10
+#ifdef REVB // RevB boards have a slightly different pinout.
 
-#define R_STEP 8
-#define G_STEP 4
-#define B_STEP 2
-#define MAX_COLOR 255
+#define LED_OUT      5
+#define BUTTON_IN    13
+#define ANALOG_INPUT A11
+#define IO_A         15
+
+#else
+
+#define LED_OUT      13
+#define BUTTON_IN    10
+#define ANALOG_INPUT A9
+#define IO_A         7
+#define IO_B         11
+
+#endif
+
 #define PAUSE_TIME 500
 
-int R = 0;
-boolean R_bounced = false;
-int G = 0;
-boolean G_bounced = false;
-int B = 0;
-boolean B_bounced = false;
+int count = LED_COUNT;
 
 // first, let's get ready to blink using some FastSPI_LED2 routines
 // take a look at the FastSPI_LED2 example called Fast2Dev for more usage info
 void setup()
 {  
-  LEDS.addLeds<WS2811, PIN_SIGNAL, GRB>(leds, LED_COUNT); // this configures the BlinkyBoard - leave as is.
-  LEDS.showColor(CRGB(0, 0, 0)); // set the color for the strip all at once.
-  LEDS.setBrightness(0); // start out with LEDs off
-  LEDS.show(); // you'll always need to call this function to make your changes happen.
+  LEDS.addLeds<WS2811, LED_OUT, GRB>(leds, LED_COUNT); // this configures the BlinkyBoard - leave as is.
+  LEDS.setBrightness(10);
 }
 
-int cycle_color(int color, int stepping, boolean &bounced){
-    if(! bounced){
-      if(color + stepping > MAX_COLOR){
-         bounced = true; 
-         return cycle_color(color, stepping, bounced);
-      }else{
-         return color + stepping;
-      }
+void flash() {
+  for(int i = 0; i < 20; i++){
+     LEDS.showColor(i % 2 == 0 ? 0xFF0000 : 0xFFFFFF);
+     delay(100);
+  }
+  LEDS.showColor(0x000000);
+}
+
+void do_countdown(){
+   CRGB color;
+    if(count > 40){
+      color = 0x00FF00;
+    }else if(count > 20){
+      color = 0xFFFF00;
     }else{
-      if(color - stepping < 0){
-         bounced = false;
-         return cycle_color(color, stepping, bounced);
-        }
-        else{
-           return color - stepping; 
-        }
-    }
+      color = 0xFF0000;
+    } 
     
-    if(color + stepping > MAX_COLOR){
-       return color - stepping;   
-    }else{
-       return color + stepping;
+    for(int i = 0; i < count; i++){
+       leds[i] = color; 
     }
+    for(int i = count; i < LED_COUNT; i++){
+      leds[i] = 0x000000;
+    }  
+      
+    LEDS.show(); // set the color for the strip all at once.
 }
 
 void loop() {
-  R = cycle_color(R, R_STEP, R_bounced);
-  G = cycle_color(G, G_STEP, G_bounced);
-  B = cycle_color(B, B_STEP, B_bounced);
+  if (Serial.available()){
+     while(Serial.read() != -1){};
+     count = LED_COUNT;
+  }
+  else if(digitalRead(BUTTON_IN) == 1){
+     count = LED_COUNT; 
+  } else if(count){
+    do_countdown();
+    count--;
+    if(!count){
+       flash(); 
+    }
+  }
   
-  LEDS.showColor(CRGB(R, G, B)); // set the color for the strip all at once.
-  LEDS.setBrightness(93);
-
   delay(PAUSE_TIME);
 }

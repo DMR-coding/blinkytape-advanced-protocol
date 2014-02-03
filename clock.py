@@ -1,27 +1,12 @@
-import serial
+import sys
+sys.path.append("./frame_protocol")
+from BlinkyTape import BlinkyTape
 from datetime import datetime
 from time import sleep
 
 #You'll need to edit this line to match the
 #serial address where your blinkytape is actually attached.
 SERIAL_ADDRESS = "COM6"
-LED_COUNT = 60
-
-def write_solid_frame(color, port):
-    port.write([0x03])
-    port.write(color.to_bytes(3, "big"))
-
-def write_led_frame(leds, port):
-    if len(leds) != LED_COUNT:
-        raise Exception("Wrong number of values passed.")
-    port.write([0x01])
-    for value in leds:
-        port.write(value.to_bytes(3, "big"))
-
-def write_brightness_frame(brightness, port):
-    if brightness < 0 or brightness > 93:
-        raise Exception("Brightness out of allowable range.")
-    port.write([0x02, brightness])
 
 def encode_to_led_bits(num, numBits, onColor, offColor):
     byts = []
@@ -51,14 +36,15 @@ time_colors = {
 }
 
 def fill_time_frame(frame, secs):
-    return [time_colors[secs // 10] for i in range(LED_COUNT - len(frame))] + frame
+    return [time_colors[secs // 10] for i in range(BlinkyTape.LED_COUNT - len(frame))] + frame
 
+blinkyTape = None
 try:
-    port = serial.serial_for_url(SERIAL_ADDRESS)
-    write_brightness_frame(10, port)
+    blinkyTape = BlinkyTape(SERIAL_ADDRESS)
+    blinkyTape.setBrightness(30)
     while True:
-        write_led_frame(encode_time(), port)
+        blinkyTape.setColors(encode_time())
         sleep(1)
 finally:
-    write_solid_frame(0x404040, port)
-    port.close()
+    if blinkyTape:
+        blinkyTape.setColor(0x404040)

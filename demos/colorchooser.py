@@ -18,7 +18,7 @@ try:
     #Initiate the tape's brightness. 10 is a pretty good setting
     #for developing in a dim room without burning your eyes out!
     #Edit this upward to display the clock in brighter-lit areas.
-    blinkyTape.setBrightness(10)
+    blinkyTape.setBrightness(40)
 
     while True:
         color = colorchooser.askcolor()[0]

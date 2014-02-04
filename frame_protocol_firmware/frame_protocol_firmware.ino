@@ -42,8 +42,7 @@ int count = LED_COUNT;
 void setup()
 {  
   LEDS.addLeds<WS2811, LED_OUT, GRB>(leds, LED_COUNT); // this configures the BlinkyBoard - leave as is.
-  LEDS.showColor(0x000000);
-  LEDS.setBrightness(10);
+  reset();
 }
 
 //Reads LED_COUNT RGB byte triplets from the serial port as they
@@ -123,7 +122,13 @@ void read_frame(){
 }
 
 void reset(){
-   LEDS.showColor(0x000000);
+   //We set the whole array to 0 and show() instead of showColor(0)
+   //so that future unrelated show() commands (e.g. to initiate brightness)
+   //don't suddenly make an old frame reappear.
+   for(int i = 0; i < LED_COUNT; i++){
+      leds[i] = CRGB(0,0,0); 
+   }
+   LEDS.show();
    //Consume and discard the remainder of the serial buffer.
    while(Serial.available()){
      Serial.read();

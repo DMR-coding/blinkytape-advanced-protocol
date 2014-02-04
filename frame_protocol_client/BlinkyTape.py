@@ -29,11 +29,15 @@ class BlinkyTape:
 
     #Set all the LEDs of the strip to a single color.
     def setColor(self, color):
-        self.serial.write([CODE_SET_COLOR])
-        self.serial.write(color.to_bytes(3, "big"))
+        if type(color) is not RGB:
+            color = RGB(color)
+        self.serial.write([CODE_SET_COLOR] + color.getByteList())
 
-    #Takes an array of integer values specifying LED states.
-    #Think of them as hex color codes: 0xRRGGBB.
+    #Takes an array of color values.
+    #Three options for specifying a color value:
+    #A single integer corresponding to a hex code (i.e. 0xRRGGBB)
+    #A tuple of integers (R, G, B)
+    #An RGB object as defined in this module.
     def setColors(self, leds):
         if len(leds) != self.LED_COUNT:
             raise Exception("Wrong number of values passed.")
@@ -53,3 +57,37 @@ class BlinkyTape:
     #flush its serial read buffer.
     def reset(self):
         self.serial.write([CODE_RESET])
+
+class RGB:
+    def __init__(self, *args):
+        if len(args) == 1:
+            if type(args[0]) is tuple and len(args[0]) == 3:
+                (self.R, self.G, self.B) = args[0]
+                return
+            if type(args[0]) is list and len(args[0]) == 3:
+                (self.R, self.G, self.B) = args[0]
+                return
+            elif type(args[0]) is int:
+                (self.R, self.G, self.B) = args[0].to_bytes(3, "big")
+                return
+        elif len(args) == 3:
+            (self.R, self.G, self.B) = args
+            return
+        raise Exception("Couldn't decode the provided color value (if any).")
+
+    #Returns a single integer color code, meant to be read as a hex byte triplet: 0xRRGGBB
+    def getColorCode(self):
+        return self.R * 0x10000 + self.G * 0x100 + self.B
+
+    #Returns a tuple of independent color codes, (R, G, B)
+    def getByteTuple(self):
+        return (self.R, self.G, self.B)
+
+    #Returns a list of independent color codes, [R, G, B]
+    def getByteList(self):
+        return [self.R, self.G, self.B]
+
+    def __str__(self):
+        return hex(self.getColorCode())
+    def __repr__(self):
+        return self.__str__()

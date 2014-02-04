@@ -27,23 +27,21 @@ class BlinkyTape:
         if self.serial:
             self.serial.close()
 
-    #Set all the LEDs of the strip to a single color.
+    #Set all the LEDs of the strip to a single color. (An RGB or a value that can be used to construct an RGB)
     def setColor(self, color):
         if type(color) is not RGB:
             color = RGB(color)
         self.serial.write([CODE_SET_COLOR] + color.getByteList())
 
-    #Takes an array of color values.
-    #Three options for specifying a color value:
-    #A single integer corresponding to a hex code (i.e. 0xRRGGBB)
-    #A tuple of integers (R, G, B)
-    #An RGB object as defined in this module.
+    #Takes an array of color values: RGBs or values that can be used to construct an RGB. 
     def setColors(self, leds):
         if len(leds) != self.LED_COUNT:
             raise Exception("Wrong number of values passed.")
         self.serial.write([CODE_SET_COLORS])
         for value in leds:
-            self.serial.write(value.to_bytes(3, "big"))
+            if type(value) is not RGB:
+                value = RGB(value)
+            self.serial.write(value.getByteList())
 
     #Set the brightness level of your BlinkyTape. BlinkyTape's brightness values
     #evidently go (rather arbitrarily) from 0 to 93.

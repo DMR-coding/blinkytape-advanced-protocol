@@ -1,12 +1,16 @@
 import sys
 sys.path.append("../frame_protocol_client")
-from BlinkyTape import BlinkyTape
+from BlinkyTape import BlinkyTape, RGB
 from datetime import datetime
 from time import sleep
 
 #You'll need to edit this line to match the
 #serial address where your blinkytape is actually attached.
-SERIAL_ADDRESS = "COM6"
+SERIAL_ADDRESS = "COM5"
+
+#Blinkytape gets bright! 10 is a pretty good setting
+#for developing in a dim room without burning your eyes out.
+BRIGHTNESS = 20
 
 #Encodes an integer (num) into a fixed-length (numBits) array of color
 #codes representing 1 (onColor) and 0 (offColor) bits
@@ -40,7 +44,7 @@ def encode_time():
 
 time_colors = {
     0: 0xFF0000,
-    1: 0xFFa500,
+    1: RGB(210,105,0),
     2: 0xFFFF00,
     3: 0x00FF00,
     4: 0x0000FF,
@@ -57,10 +61,8 @@ try:
     #Create a BlinkyTape client object.
     blinkyTape = BlinkyTape(SERIAL_ADDRESS)
     
-    #Initiate the tape's brightness. 10 is a pretty good setting
-    #for developing in a dim room without burning your eyes out!
-    #Edit this upward to display the clock in brighter-lit areas.
-    blinkyTape.setBrightness(10)
+    #Initiate the tape's brightness. 
+    blinkyTape.setBrightness(BRIGHTNESS)
 
     #Main loop. Once a second, get the binary-encoded time and send it to the tape.
     while True:

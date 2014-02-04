@@ -6,7 +6,11 @@ from tkinter import colorchooser
 
 #You'll need to edit this line to match the
 #serial address where your blinkytape is actually attached.
-SERIAL_ADDRESS = "COM6"
+SERIAL_ADDRESS = "COM5"
+
+#Blinkytape gets bright! 10 is a pretty good setting
+#for developing in a dim room without burning your eyes out.
+BRIGHTNESS = 50
 
 blinkyTape = None
 root = None
@@ -15,10 +19,8 @@ try:
     blinkyTape = BlinkyTape(SERIAL_ADDRESS)
     root = tkinter.Tk()
     
-    #Initiate the tape's brightness. 10 is a pretty good setting
-    #for developing in a dim room without burning your eyes out!
-    #Edit this upward to display the clock in brighter-lit areas.
-    blinkyTape.setBrightness(40)
+    #Initiate the tape's brightness.
+    blinkyTape.setBrightness(BRIGHTNESS)
 
     while True:
         color = colorchooser.askcolor()[0]

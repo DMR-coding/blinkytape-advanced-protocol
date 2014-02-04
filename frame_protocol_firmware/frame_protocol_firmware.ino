@@ -4,6 +4,11 @@
    0x01: LED settings array. Body length: 3 * LED_COUNT bytes
    0x02: Set brightess. Body length: 1 byte.
    0x03: Set all LEDs to solid color. Body length: 3 bytes.
+   0x04: Set LED at provided index to color. Body length: 1 index byte + 3 RGB bytes
+   
+   Since USB is assumed to be a generally reliable channel, we just take in commands
+   "fire and forget style." However, in the event that a frame IS interrupted, the read
+   operation will timeout after IO_TIMEOUT ms and reset the firmware.
 */
 
 #include <FastSPI_LED2.h>
@@ -30,11 +35,6 @@ struct CRGB leds[LED_COUNT]; // this struct contains 60 CRGB values.  This is wh
 
 #define IO_TIMEOUT 50
 
-//These are consts instead of defines because they need to get a type attached to them in order
-//to avoid a compiler error.
-const uint8_t fail_code = 0;
-const uint8_t success_code = 1;
-
 int count = LED_COUNT;
 
 // first, let's get ready to blink using some FastSPI_LED2 routines
@@ -57,14 +57,12 @@ void read_led_frame(){
       }else if(millis() - lastRead > IO_TIMEOUT){
         //We've waited much too long for this frame. Presumably, it's been interrupted.
         reset();
-        Serial.write(fail_code);
         return; 
       }
       
       //else, the loop just reruns with the same value of i.
     }
 
-   Serial.write(success_code);
    LEDS.show();
 }
 
@@ -74,15 +72,12 @@ void read_brightness_frame(){
       if(millis() - lastRead > IO_TIMEOUT){
           //We've waited much too long for this frame. Presumably, it's been interrupted.
           reset();
-          Serial.write(fail_code);
           return; 
         }
   }
       
   LEDS.setBrightness(Serial.read());
   LEDS.show();
-  
-  Serial.write(success_code);
 }
 
 void read_solid_frame(){
@@ -91,14 +86,43 @@ void read_solid_frame(){
       if(millis() - lastRead > IO_TIMEOUT){
           //We've waited much too long for this frame. Presumably, it's been interrupted.
           reset();
-          Serial.write(fail_code);
           return; 
         }
   }
 
-  LEDS.showColor(CRGB(Serial.read(), Serial.read(), Serial.read()));
-   
-  Serial.write(success_code);
+  show_solid(CRGB(Serial.read(), Serial.read(), Serial.read()));
+}
+
+void read_indexed_frame(){
+  unsigned long lastRead = millis();
+  while (Serial.available() < 4){
+      if(millis() - lastRead > IO_TIMEOUT){
+          //We've waited much too long for this frame. Presumably, it's been interrupted.
+          reset();
+          return; 
+        }
+  }
+  
+  int index = Serial.read();
+  if(index < 0 || index >= LED_COUNT){
+     //Index out of bounds!
+     reset();
+     return; 
+  }
+  leds[index] = CRGB(Serial.read(), Serial.read(), Serial.read());
+  LEDS.show();
+}
+
+//This firmware doesn't use LEDS.showColor to avoid the following problem:
+// 1) set up pattern in leds, show()
+// 2) setColor
+// 3) Perform an unrelated operation like brightness
+// 4) show() again-- old frame from #1 reappears because leds is still loaded with it.
+void show_solid(CRGB color){
+    for(int i = 0; i < LED_COUNT; i++){
+      leds[i] = color;      
+    }
+    LEDS.show();
 }
 
 void read_frame(){
@@ -115,6 +139,9 @@ void read_frame(){
       case 0x03:
         read_solid_frame();
         break;
+      case 0x04:
+        read_indexed_frame();
+        break;
       default:
        reset();
        break; 
@@ -122,13 +149,9 @@ void read_frame(){
 }
 
 void reset(){
-   //We set the whole array to 0 and show() instead of showColor(0)
-   //so that future unrelated show() commands (e.g. to initiate brightness)
-   //don't suddenly make an old frame reappear.
-   for(int i = 0; i < LED_COUNT; i++){
-      leds[i] = CRGB(0,0,0); 
-   }
-   LEDS.show();
+   //turn all the LEDs off
+   show_solid(CRGB(0,0,0));
+
    //Consume and discard the remainder of the serial buffer.
    while(Serial.available()){
      Serial.read();

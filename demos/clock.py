@@ -1,3 +1,7 @@
+#This demo displays a binary clock on the blinkytape.
+#This is a key test file for the firmware... If it does something that looks goofy,
+#it's probably to make sure a feature gets exercised.
+
 import sys
 sys.path.append("../frame_protocol_client")
 from BlinkyTape import BlinkyTape, RGB
@@ -67,6 +71,7 @@ try:
     #Main loop. Once a second, get the binary-encoded time and send it to the tape.
     while True:
         blinkyTape.setColors(encode_time())
+        blinkyTape.setColorAt(0, RGB(200,200,200)); #Just making sure this gets exercised
         sleep(1)
 finally:
     if blinkyTape:

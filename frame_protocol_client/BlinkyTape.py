@@ -14,6 +14,7 @@ import serial
 CODE_SET_COLORS = 0x01
 CODE_SET_BRIGHTNESS = 0x02
 CODE_SET_COLOR = 0x03
+CODE_SET_COLOR_AT = 0x04
 CODE_RESET = 0x00
 
 class BlinkyTape:
@@ -32,6 +33,14 @@ class BlinkyTape:
         if type(color) is not RGB:
             color = RGB(color)
         self.serial.write([CODE_SET_COLOR] + color.getByteList())
+
+    #Set the LED at a given index to a given color. (An RGB or a value that can be used to construct an RGB)
+    def setColorAt(self, index, color):
+        if index < 0 or index >= self.LED_COUNT:
+            raise Exception("Index out of bounds.")
+        if type(color) is not RGB:
+            color = RGB(color)
+        self.serial.write([CODE_SET_COLOR_AT, index] + color.getByteList())
 
     #Takes an array of color values: RGBs or values that can be used to construct an RGB. 
     def setColors(self, leds):
@@ -55,6 +64,11 @@ class BlinkyTape:
     #flush its serial read buffer.
     def reset(self):
         self.serial.write([CODE_RESET])
+
+    def close(self):
+        if self.serial:
+            self.reset()
+            self.serial.close()
 
 class RGB:
     def __init__(self, *args):

@@ -10,3 +10,4 @@ Repo Contents
   * More languages coming soon. Requests welcome.
 * demos: Example remote-control BlinkyTape apps.
   * clock.py: A python3 application which displays a binary clock on the BlinkyTape.
+  * colorchooser.py: Set BlinkyTape's color from a colorpicker dialog.

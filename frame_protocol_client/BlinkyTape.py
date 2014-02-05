@@ -17,12 +17,14 @@ CODE_SET_COLOR = 0x03
 CODE_SET_COLOR_AT = 0x04
 CODE_RESET = 0x00
 
+BAUD_RATE = 115200
+
 class BlinkyTape:
     LED_COUNT = 60
     #Constructor. Takes a serial URL (e.g. "COM6" or "/dev/ttyUSB0") indicating the
     #serial port where your blinkytape is attached.
     def __init__(self, serialURL):
-        self.serial = serial.serial_for_url(serialURL)
+        self.serial = serial.serial_for_url(serialURL, BAUD_RATE)
 
     def __del__(self):
         if self.serial:

@@ -34,6 +34,7 @@ struct CRGB leds[LED_COUNT]; // this struct contains 60 CRGB values.  This is wh
 #endif
 
 #define IO_TIMEOUT 50
+#define BAUD_RATE 115200 //Based on BlinkinLabs example code... Not sure of actual capabilities
 
 int count = LED_COUNT;
 
@@ -42,6 +43,7 @@ int count = LED_COUNT;
 void setup()
 {  
   LEDS.addLeds<WS2811, LED_OUT, GRB>(leds, LED_COUNT); // this configures the BlinkyBoard - leave as is.
+  Serial.begin(BAUD_RATE);
   reset();
 }
 

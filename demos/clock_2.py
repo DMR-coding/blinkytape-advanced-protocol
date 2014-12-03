@@ -4,13 +4,13 @@
 
 import sys
 sys.path.append("../frame_protocol_client")
-from BlinkyTape import BlinkyTape, RGB
+from BlinkyTape_2 import BlinkyTape, RGB
 from datetime import datetime
 from time import sleep
 
 #You'll need to edit this line to match the
 #serial address where your blinkytape is actually attached.
-SERIAL_ADDRESS = "COM5"
+SERIAL_ADDRESS = "/dev/tty.usbmodem14121"
 
 #Blinkytape gets bright! 10 is a pretty good setting
 #for developing in a dim room without burning your eyes out.
@@ -64,14 +64,13 @@ blinkyTape = None
 try:
     #Create a BlinkyTape client object.
     blinkyTape = BlinkyTape(SERIAL_ADDRESS)
-    
-    #Initiate the tape's brightness. 
+
+    #Initiate the tape's brightness.
     blinkyTape.setBrightness(BRIGHTNESS)
 
     #Main loop. Once a second, get the binary-encoded time and send it to the tape.
     while True:
         blinkyTape.setColors(encode_time())
-        blinkyTape.setColorAt(0, RGB(200,200,200)); #Just making sure this gets exercised
         sleep(1)
 finally:
     if blinkyTape:
